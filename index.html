@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Membaca Suku Kata Kelas 1 SD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .font-bubble {
+            font-family: 'Fredoka', cursive;
+        }
+        .bounce-hover:hover {
+            transform: scale(1.05);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-shadow {
+            box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.15);
+        }
+        .btn-shadow:active {
+            box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.15);
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-6 text-slate-800">
+
+    <!-- Header/Bar Atas -->
+    <header class="w-full max-w-3xl bg-white rounded-3xl p-4 shadow-lg border-4 border-yellow-300 mb-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="bg-yellow-400 p-3 rounded-2xl text-2xl shadow-inner">
+                📖
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black font-bubble text-indigo-600">Membaca Suku Kata</h1>
+                <p class="text-xs md:text-sm text-gray-500 font-semibold">Kelas 1 SD • Bahasa Indonesia</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2 bg-indigo-50 px-4 py-2 rounded-2xl border-2 border-indigo-200">
+            <span class="text-xl">⭐</span>
+            <span id="score-display" class="font-black text-xl text-indigo-700">0</span>
+        </div>
+    </header>
+
+    <main class="w-full max-w-3xl bg-white rounded-3xl shadow-xl border-4 border-indigo-100 p-6 md:p-8 flex-1 flex flex-col justify-between relative overflow-hidden">
+        
+        <!-- Halaman Awal / Welcome Screen -->
+        <div id="start-screen" class="flex flex-col items-center text-center my-auto space-y-6">
+            <div class="w-32 h-32 bg-indigo-100 rounded-full flex items-center justify-center text-6xl shadow-inner animate-bounce">
+                🐻
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black font-bubble text-indigo-600">Halo, Teman Cerdas! 👋</h2>
+            <p class="text-gray-600 text-lg max-w-md font-medium">
+                Ayo belajar membaca suku kata dengan nyaring dan mandiri! Ada 10 soal menyenangkan dalam 2 bagian.
+            </p>
+            
+            <div class="w-full max-w-md bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-left text-sm text-amber-900 space-y-1">
+                <p class="font-bold">🎯 Tujuan Pembelajaran (PID):</p>
+                <p>• <strong>Bagian 1 (PID 1):</strong> Mengenal & Membaca Suku Kata Dasar (ba, ca, da...)</p>
+                <p>• <strong>Bagian 2 (PID 2):</strong> Menggabungkan Suku Kata Menjadi Kata Utuh</p>
+            </div>
+
+            <button onclick="startQuiz()" class="w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-black font-bubble text-2xl py-4 rounded-2xl btn-shadow transition-all border-b-4 border-emerald-700">
+                Mulai Kuis! 🚀
+            </button>
+        </div>
+
+        <!-- Halaman Kuis -->
+        <div id="quiz-screen" class="hidden flex-col flex-1 justify-between">
+            <!-- Progress Bar & Indicator -->
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between items-center font-bold text-sm text-gray-500">
+                    <span id="pid-badge" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-extrabold">
+                        Bagian 1 (PID 1)
+                    </span>
+                    <span>Soal <span id="question-number">1</span> / 10</span>
+                </div>
+                <div class="w-full bg-gray-200 h-4 rounded-full overflow-hidden border">
+                    <div id="progress-bar" class="bg-amber-400 h-full w-10 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- Petunjuk Soal & Tombol Suara -->
+            <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 mb-4 flex items-center justify-between">
+                <div class="pr-2">
+                    <p class="text-xs uppercase font-extrabold text-indigo-400 tracking-wider">Petunjuk Guru SD:</p>
+                    <p id="question-instruction" class="text-indigo-900 font-bold text-base md:text-lg">
+                        Dengarkan dan pilih suku kata yang benar!
+                    </p>
+                </div>
+                <button onclick="playInstructionAudio()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-2xl shadow-md transition-all flex-shrink-0 flex items-center justify-center space-x-1" title="Dengar Suara Instruksi">
+                    <span class="text-2xl">🔊</span>
+                </button>
+            </div>
+
+            <!-- Target Kartu / Tampilan Soal Utama -->
+            <div class="my-auto py-4 flex flex-col items-center justify-center text-center">
+                <div id="question-display" class="text-4xl md:text-6xl font-black font-bubble text-indigo-700 bg-amber-100 border-4 border-amber-300 px-8 py-6 rounded-3xl shadow-md min-w-[200px]">
+                    ...
+                </div>
+                <p id="sub-prompt" class="text-gray-500 font-semibold mt-3 text-sm">
+                    Bacalah suku kata di atas dengan nyaring! 📣
+                </p>
+            </div>
+
+            <!-- Pilihan Jawaban -->
+            <div id="options-container" class="grid grid-cols-2 gap-3 mt-4">
+                <!-- Tombol Pilihan (A, B, C, D) akan dibuat via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Pop-up Modul Umpan Balik / Penjelasan Saat Salah -->
+        <div id="feedback-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-3xl border-4 p-6 max-w-md w-full shadow-2xl text-center flex flex-col items-center space-y-4 animate-scaleUp">
+                <div id="feedback-icon" class="text-6xl">
+                    💡
+                </div>
+                <h3 id="feedback-title" class="text-2xl font-black font-bubble text-rose-600">
+                    Kurang Tepat, Ya!
+                </h3>
+                
+                <div class="bg-rose-50 border-2 border-rose-200 p-4 rounded-2xl w-full text-left">
+                    <p class="text-xs font-bold text-rose-400 uppercase tracking-wide">Penjelasan Guru:</p>
+                    <p id="feedback-text" class="text-rose-900 font-bold text-sm md:text-base mt-1">
+                        ...
+                    </p>
+                </div>
+
+                <button onclick="repeatQuestionAudio()" class="w-full bg-amber-400 hover:bg-amber-500 text-amber-950 font-black font-bubble py-3 rounded-2xl flex items-center justify-center space-x-2 shadow-sm">
+                    <span>🔊 Dengarkan Penjelasan Lagi</span>
+                </button>
+
+                <button onclick="closeFeedbackModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black font-bubble py-3 rounded-2xl shadow-md transition-all">
+                    Lanjut ke Soal Berikutnya ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- Halaman Hasil / Rekap Nilai -->
+        <div id="result-screen" class="hidden flex-col items-center text-center my-auto space-y-6">
+            <div class="text-7xl animate-bounce">
+                🏆
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black font-bubble text-indigo-700">Luar Biasa, Hebat!</h2>
+            <p class="text-gray-600 text-base font-semibold">
+                Kamu telah menyelesaikan Kuis Membaca Suku Kata Mandiri!
+            </p>
+
+            <div class="bg-indigo-50 border-4 border-indigo-200 rounded-3xl p-6 w-full max-w-md space-y-3">
+                <div class="text-sm font-bold text-indigo-500 uppercase tracking-widest">Skor Akhir Kamu</div>
+                <div id="final-score" class="text-6xl font-black font-bubble text-indigo-700">100</div>
+                <p id="result-eval" class="text-indigo-900 font-bold text-sm pt-2">
+                    Membaca dengan lancar dan nyaring! 🎉
+                </p>
+            </div>
+
+            <button onclick="resetQuiz()" class="w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-black font-bubble text-xl py-4 rounded-2xl btn-shadow transition-all border-b-4 border-emerald-700">
+                Main Lagi 🔄
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer Keterangan -->
+    <footer class="w-full max-w-3xl text-center text-gray-400 text-xs mt-4">
+        Modul Pembelajaran Mandiri Bahasa Indonesia SD Kelas 1 • Powered by Gemini Audio API
+    </footer>
+
+    <script>
+        const questions = [
+            // === BAGIAN 1 (PID 1): Membaca & Menjodohkan Suku Kata Dasar ===
+            {
+                id: 1,
+                pid: "Bagian 1 (PID 1)",
+                instruction: "Dengarkan suara ini, lalu pilih suku kata yang sesuai!",
+                targetAudioText: "Tunjukkan suku kata: ba",
+                display: "🔊 Tekan Tombol Suara",
+                options: ["ba", "bi", "bu", "be"],
+                correct: "ba",
+                explanation: "Huruf B gabung dengan A dibaca 'ba'. Contohnya pada kata 'ba-tu'."
+            },
+            {
+                id: 2,
+                pid: "Bagian 1 (PID 1)",
+                instruction: "Bacalah suku kata berikut dengan nyaring! Manakah suara pembacaan yang benar?",
+                targetAudioText: "Bacalah: cu",
+                display: "cu",
+                options: ["ca", "ci", "cu", "ce"],
+                correct: "cu",
+                explanation: "Huruf C dibarengi U dibaca 'cu'. Seperti pada kata 'cu-ci'."
+            },
+            {
+                id: 3,
+                pid: "Bagian 1 (PID 1)",
+                instruction: "Manakah suku kata yang dibaca 'm-i' -> 'mi'?",
+                targetAudioText: "Mana suku kata mi?",
+                display: "m + i = ?",
+                options: ["ma", "mi", "mu", "mo"],
+                correct: "mi",
+                explanation: "Huruf M jika bertemu dengan huruf vokal I akan dibaca 'mi'."
+            },
+            {
+                id: 4,
+                pid: "Bagian 1 (PID 1)",
+                instruction: "Dengarkan baik-baik, mana suku kata 'ro'?",
+                targetAudioText: "Pilih suku kata: ro",
+                display: "🔊 Dengarkan Suara",
+                options: ["ra", "ri", "ru", "ro"],
+                correct: "ro",
+                explanation: "Huruf R ditambah O dibaca 'ro'. Seperti kata 'ro-ti'."
+            },
+            {
+                id: 5,
+                pid: "Bagian 1 (PID 1)",
+                instruction: "Tentukan bacaan yang tepat untuk suku kata di bawah ini!",
+                targetAudioText: "Bacalah suku kata: su",
+                display: "su",
+                options: ["sa", "si", "su", "se"],
+                correct: "su",
+                explanation: "Huruf S bertemu huruf U dibaca 'su'. Contohnya kata 'su-su'."
+            },
+
+            // === BAGIAN 2 (PID 2): Penggabungan Suku Kata Menjadi Kata Utuh ===
+            {
+                id: 6,
+                pid: "Bagian 2 (PID 2)",
+                instruction: "Lengkapi kata berikut! Kuda = ku + ...",
+                targetAudioText: "Ku da. Gabungan dari ku dan da.",
+                display: "ku - [ ? ]",
+                options: ["da", "ba", "ta", "pa"],
+                correct: "da",
+                explanation: "Kata 'KUDA' terdiri dari dua suku kata, yaitu 'ku' dan 'da'."
+            },
+            {
+                id: 7,
+                pid: "Bagian 2 (PID 2)",
+                instruction: "Lengkapi suku kata awal untuk kata BOLA! ... + la",
+                targetAudioText: "Bo la. Suku kata depannya adalah bo.",
+                display: "[ ? ] - la",
+                options: ["ba", "bi", "bu", "bo"],
+                correct: "bo",
+                explanation: "Kata 'BOLA' diawali dengan suku kata 'bo', lalu diikuti 'la'."
+            },
+            {
+                id: 8,
+                pid: "Bagian 2 (PID 2)",
+                instruction: "Bila suku kata 'BU' dan 'KU' digabung, menjadi kata apa?",
+                targetAudioText: "Bu ditambah Ku menjadi buku.",
+                display: "bu + ku = ?",
+                options: ["baku", "buka", "buki", "buku"],
+                correct: "buku",
+                explanation: "Suku kata 'bu' gabung dengan 'ku' dibaca lancar menjadi 'bu-ku'."
+            },
+            {
+                id: 9,
+                pid: "Bagian 2 (PID 2)",
+                instruction: "Pilih suku kata akhir yang tepat untuk kata MATA! ma + ...",
+                targetAudioText: "Ma ta. Suku kata belakangnya adalah ta.",
+                display: "ma - [ ? ]",
+                options: ["ti", "tu", "te", "ta"],
+                correct: "ta",
+                explanation: "Kata 'MATA' membutuhkan suku kata 'ta' di bagian akhir."
+            },
+            {
+                id: 10,
+                pid: "Bagian 2 (PID 2)",
+                instruction: "Mari membaca kata 3 suku kata! se - pa - ... (Sepatu)",
+                targetAudioText: "Se pa tu. Suku kata terakhirnya adalah tu.",
+                display: "se - pa - [ ? ]",
+                options: ["ta", "ti", "tu", "te"],
+                correct: "tu",
+                explanation: "Kata 'SEPATU' terdiri dari 3 suku kata: 'se', 'pa', dan 'tu'."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAudioPlaying = false;
+        let lastExplanationText = "";
+
+        /**
+         * Mengkonversi PCM16 array buffer menjadi WAV Blob agar bisa diputar native browser audio player.
+         */
+        function pcmToWav(pcmData, sampleRate) {
+            const numChannels = 1;
+            const bitsPerSample = 16;
+            const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+            const blockAlign = numChannels * (bitsPerSample / 8);
+            const dataSize = pcmData.length * (bitsPerSample / 8);
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+
+            /* RIFF identifier */
+            writeString(view, 0, 'RIFF');
+            /* file length */
+            view.setUint32(4, 36 + dataSize, true);
+            /* RIFF type */
+            writeString(view, 8, 'WAVE');
+            /* format chunk identifier */
+            writeString(view, 12, 'fmt ');
+            /* format chunk length */
+            view.setUint32(16, 16, true);
+            /* sample format (raw) */
+            view.setUint16(20, 1, true);
+            /* channel count */
+            view.setUint16(22, numChannels, true);
+            /* sample rate */
+            view.setUint32(24, sampleRate, true);
+            /* byte rate (sample rate * block align) */
+            view.setUint32(28, byteRate, true);
+            /* block align (channel count * bytes per sample) */
+            view.setUint16(32, blockAlign, true);
+            /* bits per sample */
+            view.setUint16(34, bitsPerSample, true);
+            /* data chunk identifier */
+            writeString(view, 36, 'data');
+            /* data chunk length */
+            view.setUint32(40, dataSize, true);
+
+            // Write PCM samples
+            for (let i = 0; i < pcmData.length; i++) {
+                view.setInt16(44 + i * 2, pcmData[i], true);
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        /**
+         * Memanggil Gemini API - TTS (gemini-2.5-flash-preview-tts) untuk menghasilkan vokal nyaring & jelas.
+         */
+        async function playTTS(textPrompt) {
+            if (isAudioPlaying) return;
+            isAudioPlaying = true;
+
+            try {
+                // Menyiapkan ucapan guru SD yang hangat dan sangat jelas vokal artikulasinya
+                const formattedPrompt = `Ucapkan dengan vokal suara yang sangat jelas, ramah, dan bernada guru SD kelas 1: ${textPrompt}`;
+                const apiKey = ""; // Disertakan otomatis dalam runtime Canvas
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{
+                        parts: [{ text: formattedPrompt }]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: {
+                                prebuiltVoiceConfig: { voiceName: "Kore" } // Kore: Suara ramah, mantap, dan jelas
+                            }
+                        }
+                    }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+
+                if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                    const match = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = match ? parseInt(match[1], 10) : 24000;
+                    
+                    const pcmBuffer = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmBuffer);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+
+                    const audio = new Audio(audioUrl);
+                    audio.onended = () => { isAudioPlaying = false; };
+                    audio.onerror = () => { isAudioPlaying = false; };
+                    await audio.play();
+                } else {
+                    // Fallback Web Speech API jika koneksi atau kuota dibatasi
+                    fallbackWebSpeech(textPrompt);
+                }
+            } catch (err) {
+                console.warn("TTS Gemini Fallback, menggunakan SpeechSynthesis native:", err);
+                fallbackWebSpeech(textPrompt);
+            }
+        }
+
+        function fallbackWebSpeech(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID';
+                utterance.rate = 0.85; // Bicara sedikit lebih lambat untuk kelas 1 SD
+                utterance.pitch = 1.1;
+                utterance.onend = () => { isAudioPlaying = false; };
+                utterance.onerror = () => { isAudioPlaying = false; };
+                window.speechSynthesis.speak(utterance);
+            } else {
+                isAudioPlaying = false;
+            }
+        }
+
+        function startQuiz() {
+            document.getElementById("start-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            document.getElementById("quiz-screen").classList.add("flex");
+            currentQuestionIndex = 0;
+            score = 0;
+            updateScoreDisplay();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+
+            // Update UI Indikator & PID
+            document.getElementById("question-number").innerText = currentQuestionIndex + 1;
+            document.getElementById("pid-badge").innerText = q.pid;
+            document.getElementById("question-instruction").innerText = q.instruction;
+            document.getElementById("question-display").innerText = q.display;
+            
+            // Progress bar
+            const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById("progress-bar").style.width = `${progressPercent}%`;
+
+            // Buat Pilihan Jawaban (4 Pilihan: A, B, C, D)
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+
+            const labels = ["A", "B", "C", "D"];
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement("button");
+                btn.className = "bg-white hover:bg-amber-50 border-3 border-indigo-200 text-indigo-900 font-black font-bubble text-2xl md:text-3xl py-3 md:py-4 px-3 rounded-2xl shadow hover:shadow-md transition-all active:scale-95 flex items-center justify-between border-b-4 border-indigo-300";
+                
+                btn.innerHTML = `
+                    <span class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-indigo-100 text-indigo-700 text-base md:text-lg flex items-center justify-center font-black">${labels[idx]}</span>
+                    <span class="flex-1 text-center font-bold">${opt}</span>
+                `;
+                btn.onclick = () => checkAnswer(opt);
+                container.appendChild(btn);
+            });
+
+            // Putar audio instruksi secara otomatis saat soal dimuat
+            setTimeout(() => {
+                playInstructionAudio();
+            }, 300);
+        }
+
+        function playInstructionAudio() {
+            const q = questions[currentQuestionIndex];
+            playTTS(`${q.instruction}. ${q.targetAudioText}`);
+        }
+
+        function checkAnswer(selectedOption) {
+            const q = questions[currentQuestionIndex];
+
+            if (selectedOption === q.correct) {
+                // Jawaban Benar
+                score += 10;
+                updateScoreDisplay();
+                
+                // Efek kembang api kecil
+                confetti({
+                    particleCount: 40,
+                    spread: 60,
+                    origin: { y: 0.8 }
+                });
+
+                playTTS(`Hebat! Jawabanmu benar, ${q.correct}!`);
+
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1800);
+            } else {
+                // Jawaban Salah: Tampilkan Penjelasan Lengkap dengan Suara
+                lastExplanationText = q.explanation;
+                showFeedbackModal(selectedOption, q.correct, q.explanation);
+            }
+        }
+
+        function showFeedbackModal(userAns, correctAns, explanation) {
+            const modal = document.getElementById("feedback-modal");
+            const feedbackText = document.getElementById("feedback-text");
+            
+            feedbackText.innerHTML = `Jawaban kamu (<strong>${userAns}</strong>) belum tepat.<br>Jawaban yang benar adalah <strong>${correctAns}</strong>.<br><br>💡 ${explanation}`;
+            modal.classList.remove("hidden");
+
+            // Suara penjelasan
+            const speechText = `Kurang tepat ya. Jawaban yang benar adalah ${correctAns}. ${explanation}`;
+            playTTS(speechText);
+        }
+
+        function repeatQuestionAudio() {
+            if (lastExplanationText) {
+                playTTS(lastExplanationText);
+            }
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById("feedback-modal").classList.add("hidden");
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById("score-display").innerText = score;
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("flex");
+            document.getElementById("result-screen").classList.remove("hidden");
+            document.getElementById("result-screen").classList.add("flex");
+
+            document.getElementById("final-score").innerText = score;
+
+            let evalText = "";
+            if (score === 100) {
+                evalText = "Sempurna! Kamu sudah sangat lancar dan mandiri membaca suku kata! 🌟";
+            } else if (score >= 70) {
+                evalText = "Bagus sekali! Kamu sudah bisa membaca suku kata dengan baik! Latihan sedikit lagi ya! 💪";
+            } else {
+                evalText = "Tetap semangat! Ayo berlatih lagi bersama guru dan orang tua di rumah! ❤️";
+            }
+            document.getElementById("result-eval").innerText = evalText;
+
+            // Selebrasi suara
+            playTTS(`Selamat! Kamu telah menyelesaikan kuis. Skormu adalah ${score}. ${evalText}`);
+            
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function resetQuiz() {
+            document.getElementById("result-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.remove("flex");
+            document.getElementById("start-screen").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
